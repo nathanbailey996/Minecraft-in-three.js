@@ -32,6 +32,7 @@ export default class Loaders extends EventEmitter{
             if(_source.type === 'textureLoader'){
                 this.loaders.textureLoader.load(_source.path, 
                     (file)=>{
+                        file.encoding = THREE.sRGBEncoding
                         this.setLoaded(_source, file)
                     }
                     )

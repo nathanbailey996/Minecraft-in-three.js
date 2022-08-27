@@ -6,6 +6,90 @@
     <title>Three.js Template</title>
 </head>
 <body>
+    <!-- LOADING SCREEN -->
+    <div class="loading-screen">
+        <div class="buttons-container">
+        <img src="../static/textures/minecraftlogo 2.jpeg" alt="minecraft logo" class="minecraft-logo">
+            <button class="loading-btn" id="new-game">New Game</button>
+            <button class="loading-btn" id="load-game">Load Game</button>
+            <button class="loading-btn" id="Options">Options</button>
+        </div>
+    </div>
+    <!-- LIVES -->
+    <div class="block-menu-container">
+        <div>
+        <div class="lives-container">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life1">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life2">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life3">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life4">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life5">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life6">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life7">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life8">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life9">
+            <img src="../static/textures/minecraftHeart.png" alt="heart" class="life" id="life10">
+        </div>
+        <!-- HOTBAR -->
+    <div class="block-menu">
+        <div class="block-container" id="block1">
+            <img src="../static/textures/grassBlockSide.png" alt="grass block" class="block-type" id="block1">
+        </div>
+
+        <div class="block-container" id="block2">
+            <img src="../static/textures/MinecraftWater.jpeg" alt="grass block" class="block-type" id="block2">
+        </div>
+        <div class="block-container" id="block3">
+            <img src="../static/textures/stoneBlock.png" alt="grass block" class="block-type" id="block3">
+        </div>
+        <div class="block-container" id="block4">
+            <img src="../static/textures/grassBlockBottom.png" alt="grass block" class="block-type" id="block4">
+        </div>
+        <div class="block-container" id="block5">
+            <img src="../static/textures/bedrockBlock.webp" alt="grass block" class="block-type" id="block5">
+        </div>
+        <div class="block-container" id="block6">
+            <img src="../static/textures/oakBlock.png" alt="grass block" class="block-type" id="block6">
+        </div>
+        <div class="block-container" id="block7">
+            <img src="../static/textures/treeBlock.jpeg" alt="grass block" class="block-type" id="block7">
+        </div>
+        <div class="block-container" id="block8">
+            <img src="../static/textures/brick.png" alt="grass block" class="block-type" id="block8">
+        </div>
+        <div class="block-container" id="block9">
+            <img src="../static/textures/sandBlock.jpeg" alt="grass block" class="block-type" id="block9">
+        </div>
+    </div>
+</div>
+    </div>
+<!-- SAVED WORLDS SECTION -->
+    <section class="saved-worlds-section">
+        <p class="saved-heading">Select World</p>
+        <div class="saved-worlds-container">
+            <div class="saved-worlds-scroller">
+                <div class="saved-world">
+                    <p class="saved-world-heading">new world test </p>
+                    <p class="saved-world-content">new world test (939/333/9900)</p>
+                    <p class="saved-world-content">Survival mode</p>
+                </div>
+
+            </div>
+           
+        </div>
+        <div class="saved-buttons-container">
+            <button class="loading-btn">Play Selected World</button>
+            <button class="loading-btn">Create New World</button>
+        </div>
+    </section>
+<!-- ESCAPE MENU -->
+<section class="game-menu-section">
+    <p class="menu-heading">Game Menu</p>
+    <button class="loading-btn" id="back-btn">Back to Game</button>
+    <button class="loading-btn" id="save-btn">Save and Quit to Title</button>
+</section>
+
+   
     <canvas class="webgl"></canvas>
     <img src='../static/textures/pointer.png' alt="pointer" class="pointer"/>
 

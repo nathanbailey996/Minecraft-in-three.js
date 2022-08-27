@@ -14,16 +14,39 @@ export default class Controls{
 
     setControls(){
        this.controls = {}
-       this.controls.pointerLock = new PointerLockControls(this.experience.camera.instance, document.body)
+       this.controls.pointerLock = this.experience.world.pointerLock
        this.controls.keysPressed = []
-       this.controls.speed = 0.4 
-       this.controls.sprintSpeed = 0.6
-       this.controls.jumpHeight = 0.75
-       this.controls.isSprinting = false
-       this.controls.heightOfPlayer = 12
-       this.controls.decceleration = 1.08
-       this.controls.forwardSmoothedSpeed = 0
-       this.controls.rightSmoothedSpeed = 0
+    
+       //player
+       this.player = {
+        canPlayerMove:true, 
+        speed:0.4, 
+        sprintSpeed:0.6, 
+        jumpHeight:0.75, 
+        isSprinting:false, 
+        height:10, 
+        decceleration:1.08, 
+        forwardSmoothedSpeed:0, 
+        rightSmoothedSpeed:0, 
+        intersectionSmoothing:false,
+        isBlockIntersecting:false,
+        rotation:{},
+       moveForward: ()=>{
+        this.controls.pointerLock.moveForward(this.player.isSprinting? this.player.sprintSpeed: this.player.speed)
+        this.player.isSprinting? this.player.sprintSpeed: this.player.speed
+       }, 
+       moveBackward: ()=>{
+        this.controls.pointerLock.moveForward(this.player.isSprinting? -this.player.sprintSpeed: -this.player.speed)
+       }, 
+       moveRight: ()=>{
+        this.controls.pointerLock.moveRight(this.player.isSprinting? this.player.sprintSpeed: this.player.speed)
+       }, 
+       moveLeft: ()=>{
+        this.controls.pointerLock.moveRight(this.player.isSprinting? -this.player.sprintSpeed: -this.player.speed)
+       }, 
+
+    }
+    
 
        //controls
        this.controls.forward = 'w'
@@ -49,22 +72,20 @@ export default class Controls{
         this.controls.keystart = 0
         this.controls.elapsedTime = 0
 
-
        //events
        //initialising the controls
-       this.controls.onBodyClick = ()=>{
-        this.controls.pointerLock.lock()
-        
-        
-     }
+    //    this.controls.onBodyClick = ()=>{
+    //     this.controls.pointerLock.lock()
+    //  }
 
-       document.body.addEventListener('click',this.controls.onBodyClick, false)
+    //    document.body.addEventListener('click',this.controls.onBodyClick, false)
 
       //events for moving
       this.controls.onKeyDown = (_event) =>{
           if(_event.key === this.controls.jump && this.controls.gravity.canJump){
-                this.controls.gravity.speed -=  this.controls.jumpHeight
+                this.controls.gravity.speed -=  this.player.jumpHeight
                 this.controls.gravity.canJump = false
+                this.player.canPlayerMove = true
             
           }
           this.controls.keysPressed.push(_event.key)
@@ -76,16 +97,14 @@ export default class Controls{
         if(_event.key === this.controls.forward){
             if(!this.controls.isWPressed){
                 if(this.experience.time.elapsed - this.controls.startTime < 0.15 ){
-                    this.controls.isSprinting = true
+                    this.player.isSprinting = true
 
                 }else{
-                    this.controls.isSprinting = false
+                    this.player.isSprinting = false
                 }
             }
                 this.controls.isWPressed = true
         }
-
-
 
           window.addEventListener('keyup', this.controls.onKeyUp)
         }
@@ -101,123 +120,290 @@ export default class Controls{
         if(_event.key ===this.controls.forward){
             this.controls.isWPressed = false
             this.controls.startTime = this.experience.time.elapsed
-
         }
+
+        // if(this.player.canPlayerMove){
+        //     if(_event.key === this.controls.forward){
+        //         //forward
+        //     this.controls.elapsed > 0.3? this.player.forwardSmoothedSpeed = 1 : this.player.forwardSmoothedSpeed = 0.05
+        //     }
+        //     //back
+        //     if(_event.key ===  this.controls.back){
+        //     this.controls.elapsed > 0.3? this.player.forwardSmoothedSpeed = -1 : this.player.forwardSmoothedSpeed = -0.05
+        //     }
+        //     //right
+        //     if(_event.key ===  this.controls.right){
+        //     this.controls.elapsed > 0.3? this.player.rightSmoothedSpeed = 1 : this.player.rightSmoothedSpeed = 0.05
+        //     }
+        //     //left
+        //     if(_event.key ===  this.controls.left){
+        //         this.controls.elapsed > 0.3? this.player.rightSmoothedSpeed = -1 : this.player.rightSmoothedSpeed = -0.05
+        //     }
+        //     this.player.intersectionSmoothing = false
+
+        //     }
 
         //get the time that a key was pressed for
         this.controls.elapsed = this.experience.time.elapsed - this.controls.keystart
         this.controls.keystart = 0
 
-        //if the time pressing a key is more than 0.3 seconds the decceleration takes longer
-        if(this.controls.elapsed > 0.3){
-            this.controls.forwardSmoothedSpeed = 1
-            
+        if(_event.key === this.controls.forward || _event.key === this.controls.back || _event.key === this.controls.right || _event.key === this.controls.left){
+            this.player.canPlayerMove = true
         }
-        else{
-          this.controls.forwardSmoothedSpeed = 0.4
-            
-        }
-        switch(_event.key){
-            case this.controls.back:
-            this.controls.forwardSmoothedSpeed *=-1
-            this.controls.rightSmoothedSpeed = 0
-            break;
-            case this.controls.forward:
-            this.controls.rightSmoothedSpeed = 0
-            break;
-            case this.controls.right:
-            this.controls.rightSmoothedSpeed = this.controls.forwardSmoothedSpeed
-            this.controls.forwardSmoothedSpeed = 0
-            break;
-            case this.controls.left:
-            this.controls.rightSmoothedSpeed = this.controls.forwardSmoothedSpeed * -1
-            this.controls.forwardSmoothedSpeed = 0
 
-            
-            
-        }
-        
     }
 
     window.addEventListener('keydown', this.controls.onKeyDown)       
-this.testGeometry = new THREE.BoxBufferGeometry(5,5,5)
-this.testMaterial = new THREE.MeshBasicMaterial({color:0xff0000})
-
-
-
 
     }
 
     setDebug(){
         this.debugFolder = this.experience.debug.gui.addFolder('controls')
 
-        this.debugFolder.add(this.controls, 'speed', 0.1, 1, 0.001)
-        this.debugFolder.add(this.controls, 'jumpHeight', 0.1, 1, 0.001)
-
-
+        this.debugFolder.add(this.player, 'speed', 0.1, 1, 0.001)
+        this.debugFolder.add(this.player, 'jumpHeight', 0.1, 1, 0.001)
     }
 
+    //EASING
+    easing(){
+            this.player.forwardSmoothedSpeed /= this.player.decceleration
+            this.controls.pointerLock.moveForward(this.player.forwardSmoothedSpeed * this.player.speed)
+        
+            this.player.rightSmoothedSpeed /= this.player.decceleration
+            this.controls.pointerLock.moveRight(this.player.rightSmoothedSpeed * this.player.speed)
+       
+    }
 
+    //INTERSECTION
+    intersect(_forwardSmoothingSpeed, _rightSmoothingSpeed){
+        for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
+            let breakLoop = false
+            for(const _blockPosition of _chunkArray){
+                //check if the player is beneath a block
+              if(this.experience.camera.instance.position.x <= _blockPosition.x +2.5 &&
+                this.experience.camera.instance.position.x >= _blockPosition.x - 2.5  && 
+                this.experience.camera.instance.position.z <= _blockPosition.z +2.5 &&
+                this.experience.camera.instance.position.z >= _blockPosition.z - 2.5 && (this.experience.camera.instance.position.y === _blockPosition.y + this.player.height) ) {
+                this.intersectingBlock = _blockPosition
+                // this.test.position.copy(_blockPosition)
+                // console.log((this.experience.camera.instance.position.y - (_blockPosition.y + this.player.height)) )
+
+             }
+             //positive x
+             if(this.intersectingBlock && this.intersectingBlock.x +5 === _blockPosition.x && this.intersectingBlock.z === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y - _blockPosition.y <=5 && (this.experience.camera.instance.position.y - _blockPosition.y) >=0 ){
+                if(this.experience.camera.instance.position.x - this.intersectingBlock.x > 2){
+                    // this.player.isBlockIntersecting = true
+                    // this.player.forwardSmoothedSpeed = _forwardSmoothingSpeed
+                    // this.player.rightSmoothedSpeed = _rightSmoothingSpeed
+                    // this.player.intersectionSmoothing = true
+                    // // this.player.canPlayerMove = false
+                    // isIntersection= true
+                    // this.player.isSprinting = false
+                    breakLoop = true
+                    return true;
+                    
+                    
+                } 
+             }
+             //negative x
+             if(this.intersectingBlock && this.intersectingBlock.x -5 === _blockPosition.x && this.intersectingBlock.z === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y - _blockPosition.y <=5 && (this.experience.camera.instance.position.y - _blockPosition.y) >=0 ){
+                if(this.experience.camera.instance.position.x - this.intersectingBlock.x < -1.75){
+                    // this.player.isBlockIntersecting = true
+                    // this.player.forwardSmoothedSpeed = _forwardSmoothingSpeed
+                    // this.player.rightSmoothedSpeed = _rightSmoothingSpeed
+                    // this.player.intersectionSmoothing = true
+                    // // this.player.canPlayerMove = false
+                    // isIntersection = true
+                    // this.player.isSprinting = false
+                    breakLoop = true
+                    return true
+                 } 
+             }
+             //positive z
+             if(this.intersectingBlock && this.intersectingBlock.x === _blockPosition.x && this.intersectingBlock.z + 5 === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y - _blockPosition.y <=5 && (this.experience.camera.instance.position.y - _blockPosition.y) >=0 ){
+                if(this.experience.camera.instance.position.z - this.intersectingBlock.z > 2){
+                    // this.player.isBlockIntersecting = true
+                    // this.player.forwardSmoothedSpeed = _forwardSmoothingSpeed
+                    // this.player.rightSmoothedSpeed = _rightSmoothingSpeed
+                    // this.player.intersectionSmoothing = true
+                    // // this.player.canPlayerMove = false
+                    // isIntersection = true
+                    // this.player.isSprinting = false
+                    breakLoop = true
+                    return true
+                 }
+             }
+             //negative z
+             if(this.intersectingBlock && this.intersectingBlock.x === _blockPosition.x && this.intersectingBlock.z - 5 === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y - _blockPosition.y <=5 && (this.experience.camera.instance.position.y - _blockPosition.y) >=0){
+                //  console.log(this.experience.camera. instance.position.z - this.intersectingBlock.z);
+                if(this.experience.camera.instance.position.z - this.intersectingBlock.z < -1.75){
+                // this.player.isBlockIntersecting = true
+                // this.player.forwardSmoothedSpeed = _forwardSmoothingSpeed
+                // this.player.rightSmoothedSpeed = _rightSmoothingSpeed
+                // this.player.intersectionSmoothing = true
+                // this.player.isSprinting = false
+                // // if(this.experience.camera.instance.rotation.y < 1.3 || this.experience.camera.instance.rotation.y > -1.3){
+                // // this.player.canPlayerMove = false
+                // isIntersection = true
+                
+                
+                // console.log('camera' ,this.experience.camera.instance.position.y)
+                breakLoop = true
+                return true
+        // }\
+                 } 
+             }
+           }
+        //    if(breakLoop){
+        //        break
+        //    }       
+        } 
+        
+    }
 
     update(){
+        // console.log(this.break)
         //check if keys are being pressed and move if they are
        if(this.controls.keysPressed.includes(this.controls.forward)){
-        this.controls.pointerLock.moveForward(this.controls.isSprinting? this.controls.sprintSpeed: this.controls.speed)
- }
+        this.player.moveForward()
+        this.player.forwardSmoothedSpeed = this.controls.elapsed > 1?  1 * this.player.speed: 0.3 * this.player.speed
+        this.player.rightSmoothedSpeed = 0
+
+        //check for intersections - returns true
+        const isPlayerIntersecting = this.intersect()
+        if(isPlayerIntersecting){
+            this.player.moveBackward()
+            this.player.forwardSmoothedSpeed *= -1
+            this.player.rightSmoothedSpeed = 0
+            this.player.isSprinting = false
+        }
+        
+    
+}
         if(this.controls.keysPressed.includes(this.controls.back)){
-        this.controls.pointerLock.moveForward(-this.controls.speed)
+            this.player.moveBackward()
+            this.player.forwardSmoothedSpeed = this.controls.elapsed > 1?  -1 * this.player.speed: this.player.speed * -0.3
+            this.player.rightSmoothedSpeed = 0
+
+        //check for intersections - returns true
+        const isPlayerIntersecting = this.intersect()
+        if(isPlayerIntersecting){
+            this.player.moveForward()
+            this.player.forwardSmoothedSpeed *= -1
+            this.player.rightSmoothedSpeed = 0
+            this.player.isSprinting = false
+        }
+
        }
         if(this.controls.keysPressed.includes(this.controls.left)){
-        this.controls.pointerLock.moveRight(-this.controls.speed)
+            this.player.moveLeft()
+            this.player.rightSmoothedSpeed = this.controls.elapsed > 1?  -1 * this.player.speed: this.player.speed * -0.3
+            this.player.forwardSmoothedSpeed = 0
+
+
+            //check for intersections - returns true
+            const isPlayerIntersecting = this.intersect()
+            if(isPlayerIntersecting){
+                this.player.moveRight()
+                this.player.forwardSmoothedSpeed = 0
+                this.player.rightSmoothedSpeed *= -1
+                this.player.isSprinting = false
+            }
        }
-        if(this.controls.keysPressed.includes(this.controls.right)){
-        this.controls.pointerLock.moveRight(this.controls.speed)
+        if(this.controls.keysPressed.includes(this.controls.right) ){
+            this.player.moveRight()
+            this.player.rightSmoothedSpeed = this.controls.elapsed > 1?  1 * this.player.speed: this.player.speed * 0.3
+            this.player.forwardSmoothedSpeed = 0
+
+            //check for intersections - returns true
+            const isPlayerIntersecting = this.intersect()
+            if(isPlayerIntersecting){
+                this.player.moveLeft()
+                this.player.forwardSmoothedSpeed = 0
+                this.player.rightSmoothedSpeed *= -1
+                this.player.isSprinting = false
+            }
        }
 
-       //decceseration
+
+        // // COLLISIONS WHEN EASING
+        // if(this.player.forwardSmoothedSpeed > 0.1 && !this.player.intersectionSmoothing){
+        //     this.intersect(-2,0)
+        //     this.player.canPlayerMove = true
+        // }
+        // //back
+        // if(this.player.forwardSmoothedSpeed < -0.1 && !this.player.intersectionSmoothing){
+        //      this.intersect(2,0)
+        // }
+        // //right
+        // if(this.player.rightSmoothedSpeed > 0.1 && !this.player.intersectionSmoothing){
+        //     this.intersect(0, -2)
+        //     this.player.canMove = true
+        // }
+        //     //left
+        // if(this.player.rightSmoothedSpeed < -0.1 && !this.player.intersectionSmoothing){
+        //     this.intersect(0, 2)
+        // }
+    //  console.log(this.break)
+
+       //DECCELERATION
        if(!this.controls.keysPressed.includes(this.controls.forward) &&
         !this.controls.keysPressed.includes(this.controls.back) &&
         !this.controls.keysPressed.includes(this.controls.left) && 
-        !this.controls.keysPressed.includes(this.controls.right)
-       ){
-           if(this.controls.forwardSmoothedSpeed !== 0){
-            this.controls.forwardSmoothedSpeed /= this.controls.decceleration
-            this.controls.pointerLock.moveForward(this.controls.forwardSmoothedSpeed * this.controls.speed)
-           }
-           else{
-            this.controls.rightSmoothedSpeed /= this.controls.decceleration
-            this.controls.pointerLock.moveRight(this.controls.rightSmoothedSpeed * this.controls.speed)
-           }
-       
+        !this.controls.keysPressed.includes(this.controls.right)){
+        this.player.forwardSmoothedSpeed /= this.player.decceleration
+        this.player.rightSmoothedSpeed /= this.player.decceleration
+        const isPlayerIntersecting = this.intersect()
+        if(isPlayerIntersecting){
+        this.player.forwardSmoothedSpeed /= this.player.decceleration
+        this.player.rightSmoothedSpeed /= this.player.decceleration
+        this.player.isSprinting = false
+            } 
+            
+        this.controls.pointerLock.moveForward(this.player.forwardSmoothedSpeed * this.player.speed)
+        this.controls.pointerLock.moveRight(this.player.rightSmoothedSpeed * this.player.speed)
+       }
     
 
-       }
+       //bounce back after an intersection
+    //    if(this.player.intersection){
+    //         this.easing()             
+    //    }
+      
 
-   
     // gravity
        this.experience.camera.instance.position.y -= this.controls.gravity.speed
        this.controls.gravity.speed += this.controls.gravity.acceleration
    
-    let testingPositions = null
-    this.controls.updatedBlockPositions === undefined? testingPositions = this.experience.world.terrain.terrain.arrayOfChunks: testingPositions = this.controls.updatedBlockPositions
 for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
     for(const _blockPosition of _chunkArray){
         if(this.experience.camera.instance.position.x <= _blockPosition.x +2.5 &&
           this.experience.camera.instance.position.x >= _blockPosition.x - 2.5  && 
           this.experience.camera.instance.position.z <= _blockPosition.z +2.5 &&
           this.experience.camera.instance.position.z >= _blockPosition.z - 2.5 ){
-           if(this.experience.camera.instance.position.y <= _blockPosition.y + this.controls.heightOfPlayer &&
+           if(this.experience.camera.instance.position.y <= _blockPosition.y + this.player.height &&
            this.experience.camera.instance.position.y >= _blockPosition.y 
             ){
             this.controls.gravity.speed = 0
-          this.experience.camera.instance.position.y = _blockPosition.y + this.controls.heightOfPlayer
+          this.experience.camera.instance.position.y = _blockPosition.y + this.player.height
           this.controls.gravity.canJump = true
-           
+        }
+        //collisions above the player
+        if(_blockPosition.y +this.player.height  > this.experience.camera.instance.position.y && _blockPosition.y - 2.5 - this.experience.camera.instance.position.y < 0.1){
+                this.controls.gravity.speed += 1
         }
      
           }
+
+          
     }
 }
 
     }
 }           
+
+
+
+    //0
+//-1    1
+    //0

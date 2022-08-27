@@ -1,426 +1,292 @@
 import * as THREE from 'three'
 import Experience from '../Experience'
+import {PointerLockControls} from 'three/examples/jsm/controls/PointerLockControls'
 
-export default class Terrain {
+export default class Controls{
     constructor(){
         this.experience = new Experience()
 
-        this.setTerrain()
-
+        this.setControls()
         if(this.experience.debug.active){
-          this.setDebug()
-        }
-    }
-
-    setTerrain(){
-
-        this.terrain = {}
-        this.terrain.blocks = {}
-        this.terrain.blocks.grass = {}
-        this.terrain.blocks.grass.geometry =  new THREE.BoxBufferGeometry(5,5,5)
-        this.terrain.blocks.grass.textures = []
-        this.terrain.blocks.grass.textures.push(this.experience.loaders.items.grassBlockSide)
-        this.terrain.blocks.grass.textures.push(this.experience.loaders.items.grassBlockSide)
-        this.terrain.blocks.grass.textures.push(this.experience.loaders.items.grassBlockTop)
-        this.terrain.blocks.grass.textures.push(this.experience.loaders.items.grassBlockBottom)
-        this.terrain.blocks.grass.textures.push(this.experience.loaders.items.grassBlockSide)
-        this.terrain.blocks.grass.textures.push(this.experience.loaders.items.grassBlockSide)
-
-        //array of materials for each side of the block
-        this.terrain.blocks.grass.materials = []
-     
-        for(let i = 0; i < this.terrain.blocks.grass.textures.length; i++){
-          if(i === 3){
-            this.terrain.blocks.grass.materials.push(null)
-          }else{
-          this.terrain.blocks.grass.textures[i].encoding = THREE.sRGBEncoding
-            const material = new THREE.MeshBasicMaterial({map:this.terrain.blocks.grass.textures[i]})
-            this.terrain.blocks.grass.materials.push(material)
-          }
-
+            this.setDebug()
         }
 
-
-            //edges of the blocks
-            this.terrain.blocks.grass.edges = {}
-            this.terrain.blocks.grass.edges.geometry = new THREE.EdgesGeometry(this.terrain.blocks.grass.geometry)
-            this.terrain.blocks.grass.edges.material = new THREE.LineBasicMaterial({color:0x000000})
-
-            this.terrain.blocks.grass.increment = 0.05
-            this.terrain.blocks.grass.height = 25
-
-
-
-            this.terrain.smoothedZ = 0
-            this.terrain.smoothedX = 0
-            this.terrain.amplitude = 30
-            this.terrain.blocksPosition = []
-            this.terrain.numberOfChunks = 5
-            this.terrain.chunkSize = 10
-            this.terrain.arrayOfChunks = []
-            this.terrain.blockNumber = this.terrain.chunkSize * this.terrain.chunkSize *this.terrain.numberOfChunks * this.terrain.numberOfChunks
-
-
-            noise.seed(Math.random());
-
-
-          this.terrain.blocks.grass.instancedMesh = new THREE.InstancedMesh(
-            this.terrain.blocks.grass.geometry,
-            this.terrain.blocks.grass.materials,
-          this.terrain.blockNumber
+        this.testMesh = new THREE.Mesh(
+            new THREE.BoxBufferGeometry(5,5,5), 
+            new THREE.MeshBasicMaterial()
         )
+    }
 
+    setControls(){
+       this.controls = {}
+       this.controls.pointerLock = new PointerLockControls(this.experience.camera.instance, document.body)
+       this.controls.keysPressed = []
+       this.controls.speed = 0.4
+       this.controls.sprintSpeed = 0.6
+       this.controls.jumpHeight = 0.75
+       this.controls.isSprinting = false
+       this.controls.heightOfPlayer = 12
+       this.controls.decceleration = 1.08
+       this.controls.forwardSmoothedSpeed = 0
+       this.controls.rightSmoothedSpeed = 0
+       this.controls.isBlockIntersecting = false
+       this.controls.canPlayerMove = true
 
-
-          for(let i = 0; i< this.terrain.numberOfChunks; i++){
-            for(let j = 0; j< this.terrain.numberOfChunks; j++){
-             const chunks = []
-             for(let x = i * this.terrain.chunkSize; x< (i * this.terrain.chunkSize) + this.terrain.chunkSize; x++ ){
-               for(let z = j * this.terrain.chunkSize; z< (j * this.terrain.chunkSize) + this.terrain.chunkSize; z++ ){
-               this.terrain.smoothedX = this.terrain.blocks.grass.increment * x
-               this.terrain.smoothedZ = this.terrain.blocks.grass.increment * z
-                 const elevation = Math.round(noise.simplex2(this.terrain.smoothedX, this.terrain.smoothedZ) * this.terrain.blocks.grass.height / 5) * 5
-                chunks.push( {x:x * 5, y:elevation, z:z * 5})
-
-
-               }
-             }
-             this.terrain.arrayOfChunks.push(chunks)
-           }
-
-
-        }  this.displayBlocks(this.terrain.arrayOfChunks)
-
-            //infinite world regeration
-            this.terrain.boundrys = {}
-
-
-
-            this.getBoundrys()
-
-            this.experience.camera.instance.position.x = (this.terrain.boundrys.biggestX -this.terrain.boundrys.smallestX )/ 2
-            this.experience.camera.instance.position.z = (this.terrain.boundrys.biggestZ -this.terrain.boundrys.smallestZ )/ 2
-             this.experience.camera.instance.rotation.z = Math.PI  /4
-            this.experience.camera.instance.rotation.y = Math.PI / 2
-
-           
-
-
-
+       this.player = {
+        width : 0.6, // width
+        height : 8, // height
+        depth : 0.5, // depth
+        x : this.experience.camera.instance.position.x,
+        y : this.experience.camera.instance.position.y,
+        z : this.experience.camera.instance.position.z,
+       moveForward: ()=>{
+        this.controls.pointerLock.moveForward(this.controls.isSprinting? this.controls.sprintSpeed: this.controls.speed)
+       }, 
+       moveBackward: ()=>{
+        this.controls.pointerLock.moveForward(this.controls.isSprinting? -this.controls.sprintSpeed: -this.controls.speed)
+       }, 
+       moveRight: ()=>{
+        this.controls.pointerLock.moveRight(this.controls.isSprinting? this.controls.sprintSpeed: this.controls.speed)
+       }, 
+       moveLeft: ()=>{
+        this.controls.pointerLock.moveRight(this.controls.isSprinting? -this.controls.sprintSpeed: -this.controls.speed)
+       }, 
 
     }
 
-    getBoundrys (_positions){
-      let testPositions = null
-      _positions === undefined? testPositions = this.terrain.arrayOfChunks: testPositions = _positions
 
-      const xPositions = []
-      const zPositions = []
+       //controls
+       this.controls.forward = 'w'
+       this.controls.back = 's'
+       this.controls.right = 'd'
+       this.controls.left = 'a'
+       this.controls.jump = ' '
 
-      for(const _chunkArray of testPositions){
-        for(const _blockPosition of _chunkArray){
-          xPositions.push(_blockPosition.x)
-          zPositions.push(_blockPosition.z)
+       //gravity 
+       this.controls.gravity = {}
+       this.controls.gravity.raycaster = new THREE.Raycaster()
+       this.controls.gravity.speed = 0
+       this.controls.gravity.acceleration = 0.03
+       this.controls.gravity.isBlockIntersecting = false
+       this.controls.gravity.canJump = true
 
-        }
-      }
-      this.terrain.boundrys.biggestX = Math.max.apply(null, xPositions)
-      this.terrain.boundrys.smallestX = Math.min.apply(null, xPositions)
-       this.terrain.boundrys.biggestZ = Math.max.apply(null, zPositions)
-      this.terrain.boundrys.smallestZ = Math.min.apply(null, zPositions)
-    }
-
-
-
-
-    displayBlocks(_arrayOfChunks){
-      let count = 0
-      for(const _chunkArray of _arrayOfChunks){
-
-        for(const _block of _chunkArray){
-          let matrix = new THREE.Matrix4()
-          matrix.makeTranslation(_block.x, _block.y, _block.z)
-          this.terrain.blocks.grass.instancedMesh.setMatrixAt(count, matrix)
-          count ++
-
-        }
-      this.experience.scene.add(this.terrain.blocks.grass.instancedMesh)
-      }
+       //time between W presses
+       this.controls.updatedBlockPositions = undefined
+       this.controls.startTime = this.experience.time.elapsed
+       this.controls.isWPressed = false
+  
+       //check how long a movment key was pressed 
+        this.controls.keystart = 0
+        this.controls.elapsedTime = 0
 
 
-    }
-
-    getVoxels(x,y,z){
-      for(const _chunkArray of this.terrain.arrayOfChunks){
-        for(const _blockPosition of _chunkArray){
-          if(_blockPosition.x === x && _blockPosition.y === y && _blockPosition.z === z){
-            return true
-          } 
-        }
-      }
-    }
-
-    update(){
-      if(this.experience.camera.instance.position.z <= this.terrain.boundrys.smallestZ + 20){
-        const newPositionsArray = []
-        //remove the blocks dissapearing from the back and put the others in a new array
-        for(let i = 0; i< this.terrain.arrayOfChunks.length; i++){
-          if((i +1) % this.terrain.numberOfChunks !== 0){
-            newPositionsArray.push(this.terrain.arrayOfChunks[i])
-          }
-         }
-
-   
-
-         for(let i = 0; i< this.terrain.numberOfChunks; i++){
-           const newChunk = []
-          
-           //start at the smallest x position and go to the last chunk
-           for(let x = this.terrain.boundrys.smallestX + (i * this.terrain.chunkSize * 5); x < this.terrain.boundrys.smallestX + (i * this.terrain.chunkSize * 5) + (this.terrain.chunkSize * 5); x = x +5){
-             //replace the chunks minus one chunk in the z axis
-             for(let z = this.terrain.boundrys.smallestZ - (this.terrain.chunkSize * 5); z < this.terrain.boundrys.smallestZ; z = z+5){
-               //replace the moved chunks with new values
-               this.terrain.smoothedX = this.terrain.blocks.grass.increment * x / 5
-               this.terrain.smoothedZ = this.terrain.blocks.grass.increment * z / 5
-               const elevation = Math.round(noise.simplex2(this.terrain.smoothedX, this.terrain.smoothedZ) * this.terrain.blocks.grass.height / 5) * 5
-               newChunk.push({x, y:elevation, z})
-             
-             }
-           }
-           //put the new positions in the newChunk array
-          newPositionsArray.splice(i * this.terrain.numberOfChunks , 0, newChunk)
-         }
-         
-
-         //remove old blocks and add new blocks to the scene
-         this.experience.scene.remove(this.terrain.blocks.grass.instancedMesh)
-         this.terrain.blocks.grass.instancedMesh.dispose()
-
-
-         this.terrain.blocks.grass.instancedMesh = new THREE.InstancedMesh(
-          this.terrain.blocks.grass.geometry,
-          this.terrain.blocks.grass.materials,
-        this.terrain.blockNumber
-      )
-
-      let count = 0
-      for(const _newChunkArray of newPositionsArray){
-        for(const _newBlockPositions of _newChunkArray){
-          let matrix = new THREE.Matrix4()
-          matrix.makeTranslation(_newBlockPositions.x, _newBlockPositions.y, _newBlockPositions.z)
-          this.terrain.blocks.grass.instancedMesh.setMatrixAt(count, matrix)
-           count ++
-        }
-      }
-
-      this.getBoundrys(newPositionsArray)
-      this.terrain.arrayOfChunks = newPositionsArray
-      this.experience.scene.add(this.terrain.blocks.grass.instancedMesh)
-      this.experience.world.water.resetWater()
-
-
-         
-      }
-
-
-       if(this.experience.camera.instance.position.z >= this.terrain.boundrys.biggestZ - 20){
-        const newPositionsArray = []
-        //remove the blocks dissapearing from the back and put the others in a new array
-        for(let i = 0; i< this.terrain.arrayOfChunks.length; i++){
-          if((i % this.terrain.numberOfChunks) !== 0){
-            newPositionsArray.push(this.terrain.arrayOfChunks[i])
-          }
-         }
-
-         //0  3  6
-         //1  4  7
-         //2  5  8
+       //events
+       //initialising the controls
+       this.controls.onBodyClick = ()=>{
+        this.controls.pointerLock.lock()
         
+        
+     }
 
-   
-         for(let i = 0; i< this.terrain.numberOfChunks; i++){
-           const newChunk = []
-          
-           //start at the smallest x position and go to the last chunk
-           for(let x = this.terrain.boundrys.smallestX + (i * this.terrain.chunkSize * 5); x < this.terrain.boundrys.smallestX + (i * this.terrain.chunkSize * 5) + (this.terrain.chunkSize * 5); x = x +5){
-             //replace the chunks minus one chunk in the z axis
-             for(let z = this.terrain.boundrys.biggestZ + 5; z < (this.terrain.boundrys.biggestZ + 5) + (this.terrain.chunkSize * 5); z = z+5){
-               //replace the moved chunks with new values
-               this.terrain.smoothedX = this.terrain.blocks.grass.increment * x / 5
-               this.terrain.smoothedZ = this.terrain.blocks.grass.increment * z / 5
-               const elevation = Math.round(noise.simplex2(this.terrain.smoothedX, this.terrain.smoothedZ) * this.terrain.blocks.grass.height / 5) * 5
-               newChunk.push({x, y:elevation, z})
-             
-             }
-           }
-           //put the new positions in the newChunk array
-          newPositionsArray.splice((i * this.terrain.numberOfChunks) + 4 , 0, newChunk)
-          
-         }
+       document.body.addEventListener('click',this.controls.onBodyClick, false)
 
-         //remove old blocks and add new blocks to the scene
-         this.experience.scene.remove(this.terrain.blocks.grass.instancedMesh)
-         this.terrain.blocks.grass.instancedMesh.dispose()
-
-
-         this.terrain.blocks.grass.instancedMesh = new THREE.InstancedMesh(
-          this.terrain.blocks.grass.geometry,
-          this.terrain.blocks.grass.materials,
-        this.terrain.blockNumber
-      )
-
-      let count = 0
-      for(const _newChunkArray of newPositionsArray){
-        for(const _newBlockPositions of _newChunkArray){
-          let matrix = new THREE.Matrix4()
-          matrix.makeTranslation(_newBlockPositions.x, _newBlockPositions.y, _newBlockPositions.z)
-          this.terrain.blocks.grass.instancedMesh.setMatrixAt(count, matrix)
-           count ++
-        }
-      }
-
-      this.getBoundrys(newPositionsArray)
-      this.terrain.arrayOfChunks = newPositionsArray
-      this.experience.scene.add(this.terrain.blocks.grass.instancedMesh)
-      this.experience.world.water.setWater()
-
-      }
-
-      
-      if(this.experience.camera.instance.position.x <= this.terrain.boundrys.smallestX + 20){
-
-        const newPositionsArray = []
-        //remove the blocks dissapearing from the back and put the others in a new array
-        for(let i = 0; i< this.terrain.arrayOfChunks.length; i++){
-          if(i < (this.terrain.numberOfChunks * this.terrain.numberOfChunks) - this.terrain.numberOfChunks ){
-            newPositionsArray.push(this.terrain.arrayOfChunks[i])
+      //events for moving
+      this.controls.onKeyDown = (_event) =>{
+          if(_event.key === this.controls.jump && this.controls.gravity.canJump){
+                this.controls.gravity.speed -=  this.controls.jumpHeight
+                this.controls.gravity.canJump = false
+                this.controls.canPlayerMove = true
+            
           }
-         }
+          this.controls.keysPressed.push(_event.key)
 
-   
-
-         for(let i = 0; i< this.terrain.numberOfChunks; i++){
-           const newChunk = []
-          
-           //start at the smallest x position and go to the last chunk
-           for(let z = this.terrain.boundrys.smallestZ + (i * this.terrain.chunkSize * 5); z < this.terrain.boundrys.smallestZ + (i * this.terrain.chunkSize * 5) + (this.terrain.chunkSize * 5); z = z +5){
-             //replace the chunks minus one chunk in the z axis
-             for(let x = this.terrain.boundrys.smallestX - (this.terrain.chunkSize * 5); x < this.terrain.boundrys.smallestX; x = x+5){
-               //replace the moved chunks with new values
-               this.terrain.smoothedX = this.terrain.blocks.grass.increment * x / 5
-               this.terrain.smoothedZ = this.terrain.blocks.grass.increment * z / 5
-               const elevation = Math.round(noise.simplex2(this.terrain.smoothedX, this.terrain.smoothedZ) * this.terrain.blocks.grass.height / 5) * 5
-               newChunk.push({x, y:elevation, z})
-             
-             }
-           }
-           //put the new positions in the newChunk array
-          newPositionsArray.splice(i , 0, newChunk)
-         }
-
-         //remove old blocks and add new blocks to the scene
-         this.experience.scene.remove(this.terrain.blocks.grass.instancedMesh)
-         this.terrain.blocks.grass.instancedMesh.dispose()
-
-
-         this.terrain.blocks.grass.instancedMesh = new THREE.InstancedMesh(
-          this.terrain.blocks.grass.geometry,
-          this.terrain.blocks.grass.materials,
-        this.terrain.blockNumber
-      )
-
-      let count = 0
-      for(const _newChunkArray of newPositionsArray){
-        for(const _newBlockPositions of _newChunkArray){
-          let matrix = new THREE.Matrix4()
-          matrix.makeTranslation(_newBlockPositions.x, _newBlockPositions.y, _newBlockPositions.z)
-          this.terrain.blocks.grass.instancedMesh.setMatrixAt(count, matrix)
-           count ++
-        }
-      }
-
-      this.getBoundrys(newPositionsArray)
-      this.terrain.arrayOfChunks = newPositionsArray
-      this.experience.scene.add(this.terrain.blocks.grass.instancedMesh)
-      this.experience.world.water.resetWater()
-
-      }
-
-      if(this.experience.camera.instance.position.x >= this.terrain.boundrys.biggestX - 20){
-
-        const newPositionsArray = []
-        //remove the blocks dissapearing from the back and put the others in a new array
-        for(let i = 0; i< this.terrain.arrayOfChunks.length; i++){
-          if(i >=(this.terrain.numberOfChunks)){
-            newPositionsArray.push(this.terrain.arrayOfChunks[i])
+          if(this.controls.keystart === 0){
+              this.controls.keystart = this.experience.time.elapsed
           }
-         }
-   
-         for(let i = 0; i< this.terrain.numberOfChunks; i++){
-           const newChunk = []
-          
-           //start at the smallest x position and go to the last chunk
-           for(let z = this.terrain.boundrys.smallestZ + (i * this.terrain.chunkSize * 5); z < this.terrain.boundrys.smallestZ + (i * this.terrain.chunkSize * 5) + (this.terrain.chunkSize * 5); z = z +5){
-             //replace the chunks minus one chunk in the z axis
-             for(let x = this.terrain.boundrys.biggestX + 5; x < (this.terrain.boundrys.biggestX + 5) + (this.terrain.chunkSize * 5); x = x+5){
-               //replace the moved chunks with new values
-               this.terrain.smoothedX = this.terrain.blocks.grass.increment * x / 5
-               this.terrain.smoothedZ = this.terrain.blocks.grass.increment * z / 5
-               const elevation = Math.round(noise.simplex2(this.terrain.smoothedX, this.terrain.smoothedZ) * this.terrain.blocks.grass.height / 5) * 5
-               newChunk.push({x, y:elevation, z})
-             
-             }
-           }
-           //put the new positions in the newChunk array
-          newPositionsArray.splice(i + 20 , 0, newChunk)
-          
-         }
+          //test if the W key was pressed quickly twice
+        if(_event.key === this.controls.forward){
+            if(!this.controls.isWPressed){
+                if(this.experience.time.elapsed - this.controls.startTime < 0.15 ){
+                    this.controls.isSprinting = true
 
-         //remove old blocks and add new blocks to the scene
-         this.experience.scene.remove(this.terrain.blocks.grass.instancedMesh)
-         this.terrain.blocks.grass.instancedMesh.dispose()
-
-
-         this.terrain.blocks.grass.instancedMesh = new THREE.InstancedMesh(
-          this.terrain.blocks.grass.geometry,
-          this.terrain.blocks.grass.materials,
-        this.terrain.blockNumber
-      )
-
-      let count = 0
-      for(const _newChunkArray of newPositionsArray){
-        for(const _newBlockPositions of _newChunkArray){
-          let matrix = new THREE.Matrix4()
-          matrix.makeTranslation(_newBlockPositions.x, _newBlockPositions.y, _newBlockPositions.z)
-          this.terrain.blocks.grass.instancedMesh.setMatrixAt(count, matrix)
-           count ++
+                }else{
+                    this.controls.isSprinting = false
+                }
+            }
+                this.controls.isWPressed = true
         }
-      }
 
-      this.getBoundrys(newPositionsArray)
-      this.terrain.arrayOfChunks = newPositionsArray
-      this.experience.scene.add(this.terrain.blocks.grass.instancedMesh)
-      this.experience.world.water.resetWater()
-      }
-      
+          window.addEventListener('keyup', this.controls.onKeyUp)
+        }
+
+      this.controls.onKeyUp = (_event) =>{
+          const newKeysArray = []
+        this.controls.keysPressed.map((key)=>{
+            key !== _event.key? newKeysArray.push(key): ''
+        })
+        this.controls.keysPressed = newKeysArray
+
+        //reset the start time of the W press
+        if(_event.key ===this.controls.forward){
+            this.controls.isWPressed = false
+            this.controls.startTime = this.experience.time.elapsed
+            this.controls.canPlayerMove = true
+        }
+
+        //get the time that a key was pressed for
+        this.controls.elapsed = this.experience.time.elapsed - this.controls.keystart
+        this.controls.keystart = 0
+
     }
 
+    window.addEventListener('keydown', this.controls.onKeyDown)       
 
-
-
+    }
 
     setDebug(){
-      this.debugFolder = this.experience.debug.gui.addFolder('terrain')
-      this.debugFolder.add(this.terrain.blocks.grass, 'height', 50, 150, 1)
-      this.debugFolder.add(this.terrain.blocks.grass, 'increment', 0.0002, 0.005, 0.0001)
+        this.debugFolder = this.experience.debug.gui.addFolder('controls')
+
+        this.debugFolder.add(this.controls, 'speed', 0.1, 1, 0.001)
+        this.debugFolder.add(this.controls, 'jumpHeight', 0.1, 1, 0.001)
+
 
     }
 
+    
+    easing(){
+        // if(this.controls.forwardSmoothedSpeed !== 0){
+            this.controls.forwardSmoothedSpeed /= this.controls.decceleration
+            this.controls.pointerLock.moveForward(this.controls.forwardSmoothedSpeed * this.controls.speed)
+        //    }
+       
+            this.controls.rightSmoothedSpeed /= this.controls.decceleration
+            this.controls.pointerLock.moveRight(this.controls.rightSmoothedSpeed * this.controls.speed)
+       
+    }
+
+
+
+    update(){
+        //check if keys are being pressed and move if they are
+       if(this.controls.keysPressed.includes(this.controls.forward)){
+        // let isBlockIntersecting = false
+        // this.controls.isBlockIntersecting = false
+        for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
+            for(const _blockPosition of _chunkArray){
+              if(this.experience.camera.instance.position.x <= _blockPosition.x +2.5 &&
+                this.experience.camera.instance.position.x >= _blockPosition.x - 2.5  && 
+                this.experience.camera.instance.position.z <= _blockPosition.z +2.5 &&
+                this.experience.camera.instance.position.z >= _blockPosition.z - 2.5 ){
+                this.intersectingBlock = _blockPosition
+             }
+             //positive x
+             if(this.intersectingBlock && this.intersectingBlock.x +5 === _blockPosition.x && this.intersectingBlock.z === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y- 12 === this.intersectingBlock.y){
+                if(this.experience.camera.instance.position.x - this.intersectingBlock.x > 2){
+                    this.controls.isBlockIntersecting = true
+                    this.controls.forwardSmoothedSpeed = -0.5
+                    this.controls.canPlayerMove = false
+
+
+                 }
+             }
+             //negative x
+             if(this.intersectingBlock && this.intersectingBlock.x -5 === _blockPosition.x && this.intersectingBlock.z === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y- 12 === this.intersectingBlock.y){
+                if(this.experience.camera.instance.position.x - this.intersectingBlock.x < -1.75){
+                    this.controls.isBlockIntersecting = true
+                    this.controls.forwardSmoothedSpeed = -0.5
+                    this.controls.canPlayerMove = false
+
+
+                 }
+             }
+             //positive z
+             if(this.intersectingBlock && this.intersectingBlock.x === _blockPosition.x && this.intersectingBlock.z + 5 === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y- 12 === this.intersectingBlock.y){
+                if(this.experience.camera.instance.position.z - this.intersectingBlock.z > 2){
+                    this.controls.isBlockIntersecting = true
+                    this.controls.forwardSmoothedSpeed = - 0.5
+                    this.controls.canPlayerMove = false
+
+                 }
+             }
+             //negative z
+             if(this.intersectingBlock && this.intersectingBlock.x === _blockPosition.x && this.intersectingBlock.z - 5 === _blockPosition.z && this.intersectingBlock.y < _blockPosition.y && this.experience.camera.instance.position.y- 12 === this.intersectingBlock.y){
+                if(this.experience.camera.instance.position.z - this.intersectingBlock.z < -1.75){
+                this.controls.isBlockIntersecting = true
+                this.controls.forwardSmoothedSpeed = - 0.5
+                this.controls.canPlayerMove = false
+         
+                 }
+             }
+          
+            }
+        }
+        if(!this.isBlockIntersecting && this.controls.canPlayerMove){
+        this.player.moveForward()
+        this.controls.elapsed > 0.3? this.controls.forwardSmoothedSpeed = 1 : this.controls.forwardSmoothedSpeed = 0.4
+    }
+
+ }
+        if(this.controls.keysPressed.includes(this.controls.back)){
+
+
+
+            
+this.player.moveBackward()
+this.controls.elapsed > 0.3? this.controls.forwardSmoothedSpeed = -1 : this.controls.forwardSmoothedSpeed = -0.4
+
+
+       }
+        if(this.controls.keysPressed.includes(this.controls.left)){
+            this.player.moveLeft()
+            this.controls.elapsed > 0.3? this.controls.rightSmoothedSpeed = -1 : this.controls.rightSmoothedSpeed = -0.4
+
+       }
+        if(this.controls.keysPressed.includes(this.controls.right)){
+            this.player.moveRight()
+            this.controls.elapsed > 0.3? this.controls.rightSmoothedSpeed = 1 : this.controls.rightSmoothedSpeed = 0.4
+       }
+
+       //decceseration
+       if(!this.controls.keysPressed.includes(this.controls.forward) &&
+        !this.controls.keysPressed.includes(this.controls.back) &&
+        !this.controls.keysPressed.includes(this.controls.left) && 
+        !this.controls.keysPressed.includes(this.controls.right) 
+        && this.controls.canPlayerMove ){
+            this.easing()
+       }
+
+       if(this.controls.isBlockIntersecting){
+        this.easing()
+       }
+    // gravity
+       this.experience.camera.instance.position.y -= this.controls.gravity.speed
+       this.controls.gravity.speed += this.controls.gravity.acceleration
+   
+    // let testingPositions = null
+    // this.controls.updatedBlockPositions === undefined? testingPositions = this.experience.world.terrain.terrain.arrayOfChunks: testingPositions = this.controls.updatedBlockPositions
+for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
+    for(const _blockPosition of _chunkArray){
+        if(this.experience.camera.instance.position.x <= _blockPosition.x +2.5 &&
+          this.experience.camera.instance.position.x >= _blockPosition.x - 2.5  && 
+          this.experience.camera.instance.position.z <= _blockPosition.z +2.5 &&
+          this.experience.camera.instance.position.z >= _blockPosition.z - 2.5 ){
+           if(this.experience.camera.instance.position.y <= _blockPosition.y + this.controls.heightOfPlayer &&
+           this.experience.camera.instance.position.y >= _blockPosition.y 
+            ){
+            this.controls.gravity.speed = 0
+          this.experience.camera.instance.position.y = _blockPosition.y + this.controls.heightOfPlayer
+          this.controls.gravity.canJump = true
+        }
+     
+          }
+    }
 }
 
-//0 5 10 15 20
-//1 6 11 16 21
-//2 7 12 17 22
-//3 8 13 18 23
-//4 9 14 19 24
 
+
+
+
+
+
+    }
+}           

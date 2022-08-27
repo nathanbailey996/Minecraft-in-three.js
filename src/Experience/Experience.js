@@ -7,8 +7,7 @@ import assets from '../assets'
 import Loaders from './Utils/Loaders'
 import World from './World/World'
 import Debug from './Utils/Debug'
-
-
+import Firebase from '../Firebase'
 
 
 let instance = null
@@ -29,9 +28,11 @@ export default class Experience{
         this.renderer = new Renderer()
         this.assets = assets
         this.loaders = new Loaders(assets)
+        // this.firebase = new Firebase()
 
-        //world
-            this.world = new World()
+
+        this.world = new World()
+
 
      
 
@@ -51,7 +52,9 @@ export default class Experience{
     update(){
         this.renderer.update()
         this.debug.update()
+        if(this.world){
         this.world.update()
+        }
         
         
     }
