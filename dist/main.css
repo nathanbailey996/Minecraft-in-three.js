@@ -77,7 +77,7 @@ h1, h2, h3{
     z-index: 3;
     width:100vw; 
     height:100vh; 
-    background-image: url('../static/textures/loadingScreen1.jpg');
+    background-image: url(assets/images/b3c3e43066342671.jpg);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -120,7 +120,7 @@ z-index: -1;
     display: none;
     width:100vw; 
     height:100vh; 
-    background-image: url('../static/textures/savedWorldBackground.jpeg');
+    background-image: url(e52fc5440ca7951a.jpeg);
     display: flex;
     flex-direction: column;
     padding-top: 2rem;
@@ -280,3 +280,6 @@ z-index: -1;
 
 
 
+
+
+/*# sourceMappingURL=main.css.map*/
