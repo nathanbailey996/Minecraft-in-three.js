@@ -142,6 +142,20 @@ export default class BlockTypes{
             this.blocks.waterBlock.count = 0
             this.blocks.waterBlock.instancedMesh = new THREE.InstancedMesh(this.blocks.waterBlock.geometry, this.blocks.waterBlock.material, this.blocks.waterBlock.count) 
 
+            //  glass block
+             this.blocks.glassBlock = {}
+             this.blocks.glassBlock.geometry = this.geometry
+             this.blocks.glassBlock.material = [
+               new THREE.MeshBasicMaterial({ map:this.experience.loaders.items.grassBlock, transparent:true}),
+               new THREE.MeshBasicMaterial({ map:this.experience.loaders.items.grassBlock, transparent:true}),
+               new THREE.MeshBasicMaterial({ map:this.experience.loaders.items.grassBlock, transparent:true}),
+               new THREE.MeshBasicMaterial({ map:this.experience.loaders.items.grassBlock, transparent:true}),
+               new THREE.MeshBasicMaterial({ map:this.experience.loaders.items.grassBlock, transparent:true}),
+               new THREE.MeshBasicMaterial({ map:this.experience.loaders.items.grassBlock, transparent:true}),
+             ]
+             this.blocks.glassBlock.count = 0
+             this.blocks.glassBlock.instancedMesh = new THREE.InstancedMesh(this.blocks.glassBlock.geometry, this.blocks.glassBlock.material, this.blocks.glassBlock.count) 
+ 
     }
 
     //Menu for changing the block

@@ -1,6 +1,6 @@
 import Experience from './Experience/Experience'
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set } from "firebase/database";
+import { getDatabase, ref, set, onValue } from "firebase/database";
 
 
 export default class Firebase{
@@ -11,7 +11,7 @@ export default class Firebase{
     }
 
 setFirebase(){
-        const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyCazs6XrgLtkG93oCebF9JyOKQokOdrUcI",
         authDomain: "test-7bfaf.firebaseapp.com",
         databaseURL: "https://test-7bfaf-default-rtdb.europe-west1.firebasedatabase.app",
@@ -19,53 +19,28 @@ setFirebase(){
         storageBucket: "test-7bfaf.appspot.com",
         messagingSenderId: "713753212329",
         appId: "1:713753212329:web:6da84dc3100ec9eb0ec0b8"
-      }
+      };
 
 const app = initializeApp(firebaseConfig)
-
-//  this.sendBlockData = ()
-
 }
+    storeBlockData(_blockPositions,_id){
+        const db = getDatabase()
+        const reference = ref(db, 'blockData/' + _id)
+        set(reference, _blockPositions)
+    }
 
+    fetchListOfWorldNames(){
+        let isDataSent = false
+        const db = getDatabase()
+        const  worldReference = ref(db, 'blockData/') 
+        onValue(worldReference, (_snapshot)=>{
+             const data = _snapshot.val()
+             if(!isDataSent){
+                this.experience.world.previousWorld.createSavedWorldLists(data)
+                isDataSent = true
 
+             }
+        })
+        
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// setFirebase(){
-//     const firebaseConfig = {
-//         apiKey: "AIzaSyCazs6XrgLtkG93oCebF9JyOKQokOdrUcI",
-//         authDomain: "test-7bfaf.firebaseapp.com",
-//         databaseURL: "https://test-7bfaf-default-rtdb.europe-west1.firebasedatabase.app",
-//         projectId: "test-7bfaf",
-//         storageBucket: "test-7bfaf.appspot.com",
-//         messagingSenderId: "713753212329",
-//         appId: "1:713753212329:web:6da84dc3100ec9eb0ec0b8"
-//       }
-
-//       const app = initializeApp(firebaseConfig)
-
-//       const sendNameData = (_name, _id) =>{
-//       const db = getDatabase()
-//       const reference = ref(db, 'name/' + _id)
-
-//       set(reference,_name )
-//       console.log('set');
-//       }
-
-//       sendNameData('jimmy', 'ldkjljfoad9')
-//       sendNameData('eoim', '8888o9jhbjhb')
-
-
-// }

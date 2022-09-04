@@ -8,6 +8,7 @@ import Water from './Water';
 import AddingRemovingBlocks from './AddingRemovingBlocks';
 import CreatePrevWorld from './CreatePrevWorld';
 import EscapeMenu from './EscapeMenu';
+import Sky from './Sky';
 
 export default class World{
     constructor(){
@@ -15,8 +16,10 @@ this.experience = new Experience()
 
 
  this.experience.loaders.on('ready', ()=>{
+    this.previousWorld = new CreatePrevWorld()
+    this.terrain = new Terrain()
+    this.addingRemovingBlocks = new AddingRemovingBlocks()
     this.loadWorld()
-
  })
 
 }
@@ -29,8 +32,8 @@ loadWorld(){
 
     const createWorld = ()=>{
         this.loadingScreen.style.display = 'none'
-        this.pointerLock.lock()
-        this.setWorld()
+        this.loadingScreen.style.display = '1'
+        this.previousWorld.openForm()
         newGameButton.removeEventListener('click', createWorld)
     }
     newGameButton.addEventListener('click', createWorld)
@@ -39,12 +42,7 @@ loadWorld(){
     const loadGameButton = document.querySelector('#load-game')
 
     const loadSavedWorld = ()=>{
-        this.loadingScreen.style.display = 'none'
-        const savedWorldsScreen = document.querySelector('.saved-worlds-section')
-        savedWorldsScreen.style.display = 'flex'
-        savedWorldsScreen.style.zIndex = '5'
-        this.previousWorld = new CreatePrevWorld()
-        this.setWorld()
+        this.previousWorld.openSavedWorldSection()
 
         loadGameButton.removeEventListener('click', loadSavedWorld)
     }
@@ -53,24 +51,30 @@ loadWorld(){
     this.controlsLockTime = null
     //SETTING THE GAME MENU
     this.setMenu = ()=>{
+        if(!this.previousWorld.isPlayerInGameMenu){
         this.escapeMenu = new EscapeMenu()
         this.controlsLockTime = this.experience.time.elapsed
-    // this.pointerLock.removeEventListener('unlock', this.setMenu)
-
+        this.previousWorld.isPlayerInGameMenu = true
+        console.log('controls unlocked')
+        }
     }
     this.pointerLock.addEventListener('unlock', this.setMenu)
 
+    this.pointerLock.addEventListener('lock', ()=>{
+        console.log('controls locked')
+    })
+
 }
+
 
 setWorld(){
 this.environment = new Environment()
-this.terrain = new Terrain()
-
 this.controls = new Controls()
 this.water = new Water()
-this.addingRemovingBlocks = new AddingRemovingBlocks()
+this.sky = new Sky()
 }
 
+//UPDATE FUNCTION
 update(){
     if(this.controls){
         this.controls.update()
@@ -85,6 +89,9 @@ update(){
     }
     if(this.water){
         this.water.update()
+    }
+    if(this.sky){
+        this.sky.update()
     }
 }
 

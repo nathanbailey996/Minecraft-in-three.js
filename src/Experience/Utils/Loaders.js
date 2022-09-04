@@ -22,9 +22,6 @@ export default class Loaders extends EventEmitter{
         this.loaders.textureLoader = new THREE.TextureLoader()
         this.loaders.cubeTextureLoader = new THREE.CubeTextureLoader()
         this.loaders.gltfLoader = new GLTFLoader()
-        const dracoLoader = new DRACOLoader()
-        dracoLoader.setDecoderPath('/draco/')
-        this.loaders.gltfLoader.dracoLoader = dracoLoader
     }
 
     startLoading(){

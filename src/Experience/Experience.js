@@ -28,13 +28,13 @@ export default class Experience{
         this.renderer = new Renderer()
         this.assets = assets
         this.loaders = new Loaders(assets)
-        // this.firebase = new Firebase()
+        this.firebase = new Firebase()
 
 
         this.world = new World()
 
 
-     
+    
 
 
         this.time.on('tick', ()=>{

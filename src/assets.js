@@ -46,5 +46,10 @@ export  default [
   type:'textureLoader', 
   path:'textures/treeBlock.jpeg'
 },
+{
+  name:'grassBlock', 
+  type:'textureLoader', 
+  path:'textures/glass.png'
+},
 
 ]

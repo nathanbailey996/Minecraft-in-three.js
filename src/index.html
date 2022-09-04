@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Template</title>
+    <title>Minecraft in Three.js</title>
+    <meta name="description" content="Fully interactive Minecraft but as a website made with Three.js">
 </head>
 <body>
     <!-- LOADING SCREEN -->
     <div class="loading-screen">
+        <img src="../static/textures/minecraftlogo.png" alt="minecraft logo" class="minecraft-logo">
         <div class="buttons-container">
-        <img src="../static/textures/minecraftlogo 2.jpeg" alt="minecraft logo" class="minecraft-logo">
             <button class="loading-btn" id="new-game">New Game</button>
             <button class="loading-btn" id="load-game">Load Game</button>
             <button class="loading-btn" id="Options">Options</button>
@@ -37,7 +38,7 @@
         </div>
 
         <div class="block-container" id="block2">
-            <img src="../static/textures/MinecraftWater.jpeg" alt="grass block" class="block-type" id="block2">
+            <img src="../static/textures/glass.png" alt="grass block" class="block-type" id="block2">
         </div>
         <div class="block-container" id="block3">
             <img src="../static/textures/stoneBlock.png" alt="grass block" class="block-type" id="block3">
@@ -64,22 +65,17 @@
 </div>
     </div>
 <!-- SAVED WORLDS SECTION -->
-    <section class="saved-worlds-section">
+    <section class="saved-worlds-section" id="saved-worlds">
         <p class="saved-heading">Select World</p>
         <div class="saved-worlds-container">
             <div class="saved-worlds-scroller">
-                <div class="saved-world">
-                    <p class="saved-world-heading">new world test </p>
-                    <p class="saved-world-content">new world test (939/333/9900)</p>
-                    <p class="saved-world-content">Survival mode</p>
-                </div>
-
+                <!-- where the list of worlds will be -->
             </div>
            
         </div>
         <div class="saved-buttons-container">
-            <button class="loading-btn">Play Selected World</button>
-            <button class="loading-btn">Create New World</button>
+            <button class="loading-btn" id="play-selected-btn">Play Selected World</button>
+            <button class="loading-btn" id="create-new-btn">Create New World</button>
         </div>
     </section>
 <!-- ESCAPE MENU -->
@@ -89,7 +85,31 @@
     <button class="loading-btn" id="save-btn">Save and Quit to Title</button>
 </section>
 
-   
+<!-- form to create a new world -->
+<section  class="saved-worlds-section" id="form-section">
+    <form action="" class="new-game-form">
+      <legend class="menu-heading">Create New World</legend>  
+      <label for="name">World Name</label>
+      <input type="text" id="name" class="form-input"/>
+
+    <div class="form-buttons-container">
+        <div class="buttons-container">
+            <button class="loading-btn" id="form-submit-btn">Create World</button>
+            <button class="loading-btn" id="form-cancel-btn" type="button">Cancel</button>
+        </div>
+    </div>
+
+    </form>
+</section>
+<!-- died screen -->
+   <section class="died-section">
+    <div class="died-container">
+        <h1>You Died!</h1>
+        <button class="loading-btn" id="respawn-btn">Respawn</button>
+        <button class="loading-btn" id="title-screen-btn">Title Screen</button>
+    </div>
+   </section>
+
     <canvas class="webgl"></canvas>
     <img src='../static/textures/pointer.png' alt="pointer" class="pointer"/>
 

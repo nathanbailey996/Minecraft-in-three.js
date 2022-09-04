@@ -27,7 +27,7 @@ export default class Terrain {
             this.terrain.blocks.grass = {}
 
             this.terrain.blocks.grass.increment = 0.05
-            this.terrain.blocks.grass.height = 15
+            this.terrain.blocks.grass.height = 20
             this.terrain.smoothedZ = 0
             this.terrain.smoothedX = 0
             this.terrain.amplitude = 30
@@ -35,7 +35,7 @@ export default class Terrain {
             this.terrain.numberOfChunks = 5
             this.terrain.chunkSize = 10
             this.terrain.sizeOfBiome = 0.7
-            this.terrain.distanceFromEdge =( this.terrain.numberOfChunks * this.terrain.numberOfChunks * this.terrain.chunkSize) * 0.35
+            this.terrain.distanceFromEdge =( this.terrain.numberOfChunks * this.terrain.numberOfChunks * this.terrain.chunkSize) * 0.3
             this.terrain.arrayOfChunks = []
     }
     
@@ -101,7 +101,6 @@ export default class Terrain {
       this.terrain.boundrys.smallestX = Math.min.apply(null, xPositions)
        this.terrain.boundrys.biggestZ = Math.max.apply(null, zPositions)
       this.terrain.boundrys.smallestZ = Math.min.apply(null, zPositions)
-      console.log(this.terrain.boundrys)
       //center the camera on the first render
       if(_center){
       this.experience.camera.instance.position.x = (this.terrain.boundrys.biggestX -this.terrain.boundrys.smallestX )/ 2
@@ -155,7 +154,7 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       const brickBlocks = []
       const treeBlocks = []
       const sandBlocks = []
-      const glassBlocks = []
+      // const glassBlocks = []
 
       let grassCount = 0
       let sandCount = 0
@@ -165,7 +164,7 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       let woodCount = 0
       let treeCount = 0
       let brickCount = 0
-      let glassCount = 0
+      // let glassCount = 0
 
       for(const _chunk of _arrayOfChunks){
         const newGrassChunk = []
@@ -176,7 +175,7 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
         const newBrickChunk = []
         const newTreeChunk = []
         const newSandChunk = []
-        const newGlasschunk = []
+        // const newGlasschunk = []
         for(const _blockPosition of _chunk){
           switch(_blockPosition.depth){
             case 0:
@@ -209,10 +208,10 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
                     newGrassChunk.push(_blockPosition)
                     grassCount ++
                     break;
-                  case 2:
-                    newGlasschunk.push(_blockPosition)
-                    glassCount ++ 
-                    break
+                  // case 2:
+                  //   // newGlasschunk.push(_blockPosition)
+                  //   // glassCount ++ 
+                  //   break
                   case 3:
                     newStoneChunk.push(_blockPosition)
                     stoneCount ++ 
@@ -255,7 +254,7 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
         brickBlocks.push(newBrickChunk)
         treeBlocks.push(newTreeChunk)
         sandBlocks.push(newSandChunk)
-        glassBlocks.push(newGlasschunk)
+        // glassBlocks.push(newGlasschunk)
       }
 
       //set the counts of the blocks
@@ -267,7 +266,7 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       this.blockTypes.blocks.woodBlock.count = woodCount
       this.blockTypes.blocks.treeBlock.count = treeCount
       this.blockTypes.blocks.brickBlock.count = brickCount
-      this.blockTypes.blocks.glassBlock.count = glassCount
+      // this.blockTypes.blocks.glassBlock.count = glassCount
 
       //on the first render do not remove the previous mesh
       if(_removePreviousMesh){
@@ -346,6 +345,14 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       this.blockTypes.blocks.glassBlock.count)
 
        }
+       console.log(this.blockTypes.blocks.grass.instancedMesh.count);
+       console.log(this.blockTypes.blocks.stoneBlock.instancedMesh.count);
+       console.log(this.blockTypes.blocks.bedrockBlock.instancedMesh.count);
+       console.log(this.blockTypes.blocks.woodBlock.instancedMesh.count);
+       console.log(this.blockTypes.blocks.brickBlock.instancedMesh.count);
+       console.log(this.blockTypes.blocks.treeBlock.instancedMesh.count);
+       console.log(this.blockTypes.blocks.sandBlock.instancedMesh.count);
+       console.log(this.blockTypes.blocks.dirtBlock.instancedMesh.count);
 
         //add the blocks to the scene
       this.addBlocksToScene(grassLayerBlocks, this.blockTypes.blocks.grass.instancedMesh)
@@ -356,7 +363,7 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       this.addBlocksToScene(brickBlocks, this.blockTypes.blocks.brickBlock.instancedMesh)
       this.addBlocksToScene(treeBlocks, this.blockTypes.blocks.treeBlock.instancedMesh)
       this.addBlocksToScene(sandBlocks, this.blockTypes.blocks.sandBlock.instancedMesh)
-      this.addBlocksToScene(glassBlocks, this.blockTypes.blocks.glassBlock.instancedMesh)
+      // this.addBlocksToScene(glassBlocks, this.blockTypes.blocks.glassBlock.instancedMesh)
 
     }
 
@@ -443,7 +450,6 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       this.displayBlocks(newPositionsArray, true)
       this.experience.world.water.setWater()
       this.getBoundrys(newPositionsArray)
-      this.experience.world.sky.generateSky()
       }
 
        if(this.experience.camera.instance.position.z >= this.terrain.boundrys.biggestZ -  this.terrain.distanceFromEdge){
@@ -525,7 +531,6 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
       this.displayBlocks(newPositionsArray,true)
       this.experience.world.water.setWater()
       this.getBoundrys(newPositionsArray)
-      this.experience.world.sky.generateSky()
       }
 
 
@@ -604,7 +609,6 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
          this.displayBlocks(newPositionsArray,true)
          this.experience.world.water.setWater()
          this.getBoundrys(newPositionsArray)
-        this.experience.world.sky.generateSky()
 
       }
 
@@ -681,7 +685,6 @@ this.experience.world.previousWorld.currentWorld.date = this.getCurrentDate()
          this.displayBlocks(newPositionsArray,true)
          this.experience.world.water.setWater()
          this.getBoundrys(newPositionsArray)
-        this.experience.world.sky.generateSky()
 
       }
 

@@ -6,6 +6,11 @@
     color:#fff;
 }
 
+h1, h2, h3{
+    margin-top:0; 
+    margin-bottom:0;
+}
+
 .webgl{
     position:fixed; 
     top:0;
@@ -84,23 +89,28 @@
     display: flex;
     flex-direction: column;
     align-items:center;
-    margin-top:2rem;
+    margin-top:20%;
 }
 
 .loading-btn{
     margin:1rem;
-    width:30vw; 
-    height:1.8rem;
+    width:32vw; 
+    height:2rem;
     background-color: #909292;
     border:solid black 1px; 
-    border-radius:5px;
+    border-radius:2px;
     color:white;
     cursor:pointer;
+    outline:none;
 }
 
 .minecraft-logo{
-    width:60vw;
+position:absolute; 
+width : 50%;
+left : 25%;
 }
+
+
 
 /* saved world section */
 .saved-worlds-section{
@@ -112,9 +122,10 @@
     background-image: url('../static/textures/savedWorldBackground.jpeg');
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    padding-top: 2rem;
     align-items: center;
     color:white;
+    font-size: 1.2rem;
 }
 
 .saved-heading{
@@ -148,12 +159,22 @@
 
 .saved-worlds-scroller{
     overflow-y: scroll;
-    width:40vw;
+    width:30vw;
     height:100%;
 }
 
+.saved-world{
+    padding:0.2rem;
+}
+
+/* .saved-worlds-scroller p{
+    font-size: 1.2rem; 
+    margin:0.1rem 0.25rem;
+} */
+
 .saved-world-content{
     color:grey;
+    font-size: 1.1rem;
 }
 
 .saved-buttons-container{
@@ -172,5 +193,89 @@
     background-color: rgba(0,0,0, 0.6);
 
 }
+
+/* form seciton */
+#form-section{
+    display: none;
+}
+
+.new-game-form{
+    height:max-content;
+    width:30vw; 
+    display: flex;
+    flex-direction: column;
+   
+}
+
+.new-game-form legend{
+    margin:0 auto;
+}
+
+.new-game-form label{
+    color:rgb(172, 167, 167); 
+    margin-top:2rem;
+    margin-bottom:0.2rem;
+}
+
+.form-input{
+    background-color: #000;
+    border:solid #fff 1px;
+    outline:none;
+    height:2.5rem; 
+    width:100%;
+    padding:0 0.3rem;
+    font-size: 1.1rem;
+}
+
+/* died screen */
+
+.died-section{
+    display: none;
+    background-color: rgb(58, 2, 2, 0.8);
+    width:100vw; 
+    height:100vh; 
+    position:absolute; 
+    top:0;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding-top:5rem;
+}
+
+.died-container{
+    display: flex;
+    flex-direction: column;
+}
+
+.died-container h1{
+    font-size: 3rem;
+}
+
+/* RESPONSIVE */
+
+@media(min-width:900px){
+    .minecraft-logo{
+    top:-5rem;
+    }
+    .buttons-container{
+        margin-top:15%
+    }
+    }
+    
+    @media(min-width:1500px){
+        .minecraft-logo{
+            width:35%; 
+            left:32.5%;
+        }
+    }
+    @media(min-width:3000px){
+        *{
+          font-size: 1.5rem;  
+        }
+        .loading-btn{
+            height:3rem;
+        }
+    }
+
 
 

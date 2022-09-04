@@ -12,7 +12,7 @@ setEnvironment(){
     this.directionalLight.position.set(0,4,2)
     this.experience.scene.add(this.directionalLight)
 
-    this.experience.scene.fog = new THREE.Fog(0xC0D8FF, 10, 120)
+    this.experience.scene.fog = new THREE.Fog(0xC0D8FF, 10, 90)
 
 }
 }

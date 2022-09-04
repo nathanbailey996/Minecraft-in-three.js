@@ -45,6 +45,33 @@ export default class Water{
                }
            }
        }
+    //    if(this.experience.world.addingRemovingBlocks.removedBlocks[0]){
+       const newWaterPositions = []
+       for(const _waterPosition of this.water.waterPositions){
+           let isBlockRemoved = false
+           for(const _removedBlock of this.experience.world.addingRemovingBlocks.removedBlocks){
+               if(_waterPosition.x === _removedBlock.x && _waterPosition.y === _removedBlock.y && _waterPosition.z === _removedBlock.z){
+                isBlockRemoved = true
+                } 
+           }
+        
+       
+       this.water.waterPositions = newWaterPositions
+
+       let isBlockPlaced = false
+       for(const _infiniteDepthBlock of  this.experience.world.addingRemovingBlocks.infiniteDepthBlocks){
+           if(_waterPosition.x === _infiniteDepthBlock.x && _waterPosition.y === _infiniteDepthBlock.y && _waterPosition.z === _infiniteDepthBlock.z){
+            isBlockPlaced = true
+           }
+       }
+       if(!isBlockRemoved && !isBlockPlaced){
+        newWaterPositions.push(_waterPosition)
+       }
+
+    }
+    this.water.waterPositions = newWaterPositions
+    //    console.log(this.water.waterPositions)
+    // }
        //dispose of the old instancedMesh
        this.experience.scene.remove(this.experience.world.terrain.blockTypes.blocks.waterBlock.instancedMesh)
        this.experience.world.terrain.blockTypes.blocks.waterBlock.instancedMesh.dispose()
@@ -68,13 +95,16 @@ for(const _chunk of this.experience.world.terrain.terrain.arrayOfChunks){
         let placeSand = false
         for(const _waterPosition of this.water.waterPositionsBelowSeaLevel){
             if(_waterPosition === _blockPosition.y){
+                if(!_blockPosition.depth >= 1){
                 placeSand = true
+                }
             }
         }
+        
         //place a sand block
         if(placeSand){
             newChunk.push({x:_blockPosition.x ,y:_blockPosition.y, z:_blockPosition.z, depth:-1, type:9})
-            this.experience.world.terrain.blockTypes.blocks.sandBlock.count ++ 
+            // this.experience.world.terrain.blockTypes.blocks.sandBlock.count ++ 
         }
         else{
             //if it isn't blow a water block push the original block
@@ -105,8 +135,54 @@ this.timePerLife = 2
                 this.heartsDisplayed ++
             }
         }
+        if(this.heartsDisplayed === 0){
+            this.displayDiedScreen()
+        }
       
 
+    }
+
+    displayDiedScreen(){
+        this.diedScreen = document.querySelector('.died-section')
+        this.diedScreen.style.display = 'flex'
+        this.diedScreen.style.zIndex = '5'
+        this.experience.world.previousWorld.isPlayerInGameMenu = true
+        this.experience.world.controls.controls.pointerLock.unlock()
+        
+        //respawn
+        this.respawnBtn = document.querySelector('#respawn-btn')
+        this.respawnBtn.addEventListener('click', ()=>{
+            this.respawn()
+        })
+
+        //return to title
+        this.returnBtn = document.querySelector('#title-screen-btn')
+        this.returnBtn.addEventListener('click', ()=>{
+            this.returnToTitle()
+        })
+    }
+
+    closeDiedScreen(){
+        this.diedScreen.style.display = 'none'
+        this.diedScreen.style.zIndex = '1'
+     
+        //remvoe the event listeners
+        this.respawnBtn.removeEventListener('click', ()=>{
+            this.respawn()
+        })  
+        this.returnBtn.removeEventListener('click', ()=>{
+            this.returnToTitle()
+        })
+     }
+
+    returnToTitle(){
+        this.experience.world.previousWorld.openSavedWorldSection()
+        this.closeDiedScreen()
+    }
+
+    respawn(){
+        this.closeDiedScreen()
+        this.experience.world.controls.controls.pointerLock.lock()
     }
 
     update(){
@@ -116,7 +192,8 @@ this.timePerLife = 2
                 this.experience.camera.instance.position.x >= _waterPosition.x - 2.5  && 
                 this.experience.camera.instance.position.z <= _waterPosition.z +2.5 &&
                 this.experience.camera.instance.position.z >= _waterPosition.z - 2.5 ){
-                    if(this.experience.camera.instance.position.y <= _waterPosition.y ){
+                    if(this.experience.camera.instance.position.y == _waterPosition.y ){
+                        console.log(this.experience.camera.instance.position.y, _waterPosition.y )
                         isIntersecting = true
                         if(this.heartsDisplayed > 0 ){
                       this.elapsedTime += ((this.experience.time.delta / 1000) )
@@ -139,3 +216,5 @@ this.timePerLife = 2
        
 }
 }
+
+/* save and refresh and go into a saved world */

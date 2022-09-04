@@ -5,7 +5,6 @@ export default class AddingRemovingBlocks{
     constructor(){
         this.experience = new Experience()
 
-
         this.setHoverPlane()
         this.getClickDuration()
         
@@ -35,16 +34,15 @@ export default class AddingRemovingBlocks{
 
         this.experience.scene.add(this.hoverPlane.plane.mesh)
 
-
+        //info
+        this.blockSound = new Audio('/soundEffects/blockSound.mp3')
+        this.mouseClicked = false
+        this.timeToRemoveBlock = 1 //how long it takes to remove a block (seconds)
         this.addedBlocks = []
         this.infiniteDepthBlocks = []
         this.removedBlocks = []
         this.originalBlocks = []
-        if(!this.originalBlocks[0]){
-            for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
-                this.originalBlocks.push(..._chunkArray)
-            }
-        }    
+         
     }
 
     getClickDuration(){
@@ -65,6 +63,7 @@ export default class AddingRemovingBlocks{
 
         //events
         this.blocks.onMouseDown = (_event)=>{
+            this.mouseClicked = true
         //removing duration
         if(_event.button === 0){
         this.blocks.isBlockRemoved = false
@@ -79,6 +78,7 @@ export default class AddingRemovingBlocks{
          }
 
         this.blocks.onMouseUp = (_event)=>{
+            this.mouseClicked = false
         //removing duration
         if(_event.button === 0){
         this.blocks.click.remove.startTime = 0
@@ -87,8 +87,9 @@ export default class AddingRemovingBlocks{
         //adding duration
         if(_event.button === 2){
         this.blocks.click.add.elapsed = (Date.now() - this.blocks.click.add.startTime) / 1000
-            if(this.blocks.click.add.elapsed <= 1){
+            if(this.blocks.click.add.elapsed <= 1 && !this.experience.world.previousWorld.isPlayerInGameMenu ){
                 this.addBlock()
+                this.playBlockSound()
             }
         }
 
@@ -110,77 +111,31 @@ export default class AddingRemovingBlocks{
                 const arrayOFDepths = []
                     for(const _blockPosition of this.originalBlocks){
                         if(_blockToGetDepth.x === _blockPosition.x && _blockToGetDepth.z === _blockPosition.z){
-                            arrayOFDepths.push(_blockPosition.y)
-                            
+                            arrayOFDepths.push(_blockPosition.y)                            
                         }
                     }
                 _blockToGetDepth.depth = ( Math.max.apply(null, arrayOFDepths) - _blockToGetDepth.y) / 5
-
             }
         }
 
-        //INCREASE OR DECREASE THE COUNT OF AN INSTANCED MESH
-        offsetMeshCount(_blockPosition, _offset){
-            switch(_blockPosition.depth){
-                case 0:
-                this.experience.world.terrain.blockTypes.blocks.grass.count += _offset
-                break;
-                case 1:
-                this.experience.world.terrain.blockTypes.blocks.dirtBlock.count += _offset
-                break;
-                case 2:
-                this.experience.world.terrain.blockTypes.blocks.dirtBlock.count += _offset
-                break;
-                case 3:
-                this.experience.world.terrain.blockTypes.blocks.stoneBlock.count += _offset
-                break;
-                case 4:
-                this.experience.world.terrain.blockTypes.blocks.stoneBlock.count += _offset
-                break;
-                case 5:
-                this.experience.world.terrain.blockTypes.blocks.bedrockBlock.count += _offset
-                case -1:
-                    switch(_blockPosition.type){
-                    case 1:
-                    this.experience.world.terrain.blockTypes.blocks.grass.count += _offset
-                    break;
-                //    case 2:
-                //    this.experience.world.terrain.blockTypes.blocks.grass.count += _offset
-                //    break
-                    case 3:
-                    this.experience.world.terrain.blockTypes.blocks.stoneBlock.count += _offset
-                    break
-                    case 4:
-                    this.experience.world.terrain.blockTypes.blocks.dirtBlock.count += _offset
-                    break
-                    case 5:
-                    this.experience.world.terrain.blockTypes.blocks.bedrockBlock.count += _offset
-                    break
-                    case 6:
-                    this.experience.world.terrain.blockTypes.blocks.woodBlock.count += _offset
-                    break
-                    case 7:
-                    this.experience.world.terrain.blockTypes.blocks.treeBlock.count += _offset
-                    break
-                    case 8:
-                    this.experience.world.terrain.blockTypes.blocks.brickBlock.count += _offset
-                    break
-                    case 9:
-                    this.experience.world.terrain.blockTypes.blocks.sandBlock.count += _offset
-                    break
-                    }
-        
+        setOriginalBlocks(){
+            this.originalBlocks = []
+                for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
+                    this.originalBlocks.push(..._chunkArray)
                 }
+        }
+
+        playBlockSound(){
+            this.blockSound.currentTime = 0
+            this.blockSound.play()
         }
 
 //REMOVING BLOCKS
 removeBlock(){
-    
     this.minimumDepth = 5
 
-
     this.hoverPlane.raycaster.setFromCamera(this.hoverPlane.viewPoint, this.experience.camera.instance)
-    const intersects = this.hoverPlane.raycaster.intersectObjects([this.experience.world.terrain.blockTypes.blocks.grass.instancedMesh, this.experience.world.terrain.blockTypes.blocks.dirtBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.stoneBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.woodBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.brickBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.treeBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.sandBlock.instancedMesh])
+    const intersects = this.hoverPlane.raycaster.intersectObjects([this.experience.world.terrain.blockTypes.blocks.grass.instancedMesh, this.experience.world.terrain.blockTypes.blocks.dirtBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.stoneBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.woodBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.brickBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.treeBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.sandBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.glassBlock.instancedMesh])
 
     if(intersects[0] && intersects[0].distance <=40){
         let currentBlockPosition = {
@@ -208,14 +163,14 @@ removeBlock(){
         }
         break;
 
-    //     case 3:
-    //         newBlockPosition = {
-    //             x:Math.round(intersectingObject.x / 5) * 5 , 
-    //             y:intersectingObject.y - 2.5, 
-    //             z:Math.round(intersectingObject.z / 5) * 5 , 
-
-    //         }
-    // //     break;
+        case 3:
+            currentBlockPosition = {
+                x:Math.round(intersects[0].point.x / 5) * 5,
+                y:(Math.round(intersects[0].point.y / 5) * 5) ,
+                z:Math.round(intersects[0].point.z / 5) * 5,
+    
+            }
+        break;
         case 4:
         currentBlockPosition = {
             x:Math.round(intersects[0].point.x / 5) * 5,
@@ -234,15 +189,13 @@ removeBlock(){
         const newAddedBlocksArray = []
         for(const _addedBlock of this.addedBlocks){
             if(_addedBlock.x !== currentBlockPosition.x || _addedBlock.z !== currentBlockPosition.z || _addedBlock.y !== currentBlockPosition.y){
-                newAddedBlocksArray.push(_addedBlock)
+                newAddedBlocksArray.push({..._addedBlock, depth:0})
             }
             else{
                 //the block has been added by the user
                 addedBlock = true
             }
         }
-
-        this.getDepthOfBlock([currentBlockPosition])
         if(currentBlockPosition.depth >= this.minimumDepth){
         return
         }
@@ -316,8 +269,6 @@ removeBlock(){
             }
         }
 
-        
-
         const newBlocksToPlace = []
         for(const _blockToPlace of blocksToPlace){
             let isBlockPlaced = false
@@ -348,8 +299,6 @@ removeBlock(){
         this.getDepthOfBlock(newBlocksToPlace)
         this.infiniteDepthBlocks.push(...newBlocksToPlace)
         
-        // this.experience.world.terrain.terrain.arrayOfChunks[0] = [...this.experience.world.terrain.terrain.arrayOfChunks[0], ...newBlocksToPlace]
-
         const newChunkArray = []
         for(const _chunkArray of this.experience.world.terrain.terrain.arrayOfChunks){
             const newChunk = []
@@ -360,26 +309,6 @@ removeBlock(){
                 if(_blockPosition.x === _blockToPlace.x && _blockPosition.z === _blockToPlace.z){
                     if(!_blockToPlace.isPlaced){
                         newChunk.push(_blockToPlace)
-                        // switch(_blockToPlace.depth){
-                        //     case 1:
-                        //     this.experience.world.terrain.blockTypes.blocks.dirtBlock.count ++
-                        //     break;
-                        //     case 2:
-                        //     this.experience.world.terrain.blockTypes.blocks.dirtBlock.count ++
-                        //     break;
-                        //     case 3:
-                        //     this.experience.world.terrain.blockTypes.blocks.stoneBlock.count ++
-                        //     case 4:
-                        //     this.experience.world.terrain.blockTypes.blocks.stoneBlock.count ++
-                        //     break;
-                        //     case 5:
-                        //     this.experience.world.terrain.blockTypes.blocks.bedrockBlock.count ++
-                        //     break;
-
-                                
-                        // }
-                        this.offsetMeshCount(_blockToPlace, 1)
-                        this.experience.world.terrain.blockTypes.blocks.dirtBlock.count ++
                         _blockToPlace.isPlaced = true
                     }
                 }
@@ -396,30 +325,6 @@ removeBlock(){
 
         //rebuild the terrain
         this.experience.world.terrain.getBoundrys(newChunkArray)
-        if(currentBlockPosition.depth === 0){
-        this.experience.world.terrain.blockTypes.blocks.grass.count -= 1
-        }
-        // switch(currentBlockPosition.depth){
-        // case 0:
-        // this.experience.world.terrain.blockTypes.blocks.grass.count -= 1
-        // break;
-        // case 1:
-        // this.experience.world.terrain.blockTypes.blocks.dirtBlock.count -= 1
-        // break;
-        // case 2:
-        // this.experience.world.terrain.blockTypes.blocks.dirtBlock.count -= 1
-        // break;
-        // case 3:
-        // this.experience.world.terrain.blockTypes.blocks.stoneBlock.count -= 1
-        // break;
-        // case 4:
-        // this.experience.world.terrain.blockTypes.blocks.stoneBlock.count -= 1
-        // break;
-        // case 5:
-        // this.experience.world.terrain.blockTypes.blocks.bedrockBlock.count -= 1
-
-        // }
-        this.offsetMeshCount(currentBlockPosition, -1)
         
         this.experience.world.terrain.terrain.arrayOfChunks = newChunkArray
         this.experience.world.terrain.displayBlocks(newChunkArray, true)
@@ -429,7 +334,7 @@ removeBlock(){
 //ADDING BLOCKS
 addBlock(){
     this.hoverPlane.raycaster.setFromCamera(this.hoverPlane.viewPoint, this.experience.camera.instance)
-     const intersects = this.hoverPlane.raycaster.intersectObjects([this.experience.world.terrain.blockTypes.blocks.grass.instancedMesh, this.experience.world.terrain.blockTypes.blocks.dirtBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.stoneBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.bedrockBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.woodBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.brickBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.treeBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.sandBlock.instancedMesh])
+     const intersects = this.hoverPlane.raycaster.intersectObjects([this.experience.world.terrain.blockTypes.blocks.grass.instancedMesh, this.experience.world.terrain.blockTypes.blocks.dirtBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.stoneBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.bedrockBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.woodBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.brickBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.treeBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.sandBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.glassBlock.instancedMesh])
 
      if(intersects[0] && intersects[0].distance < 40){
             const intersectingObject = intersects[0].point
@@ -522,6 +427,8 @@ addBlock(){
                     return
                 }
 
+                newBlockPosition = {x:Math.round(newBlockPosition.x), y:Math.round(newBlockPosition.y), z:Math.round(newBlockPosition.z)}
+
             newBlockPosition.depth = -1
             newBlockPosition.type = this.experience.world.terrain.blockTypes.blockbar.currentBlockIndex
    
@@ -544,68 +451,6 @@ addBlock(){
             }
             newChunkArray.push(newChunk)
            }
-           
-        //    switch(currentBlockPosition.depth){
-        //     case 0:
-        //     this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //     break;
-        //     case 1:
-        //     this.experience.world.terrain.blockTypes.blocks.dirtBlock.count ++
-        //     break;
-        //     case 2:
-        //     this.experience.world.terrain.blockTypes.blocks.dirtBlock.count ++
-        //     break;
-        //     case 3:
-        //     this.experience.world.terrain.blockTypes.blocks.stoneBlock.count ++
-        //     break;
-        //     case 4:
-        //     this.experience.world.terrain.blockTypes.blocks.stoneBlock.count ++
-        //     break;
-        //     case 5:
-        //     this.experience.world.terrain.blockTypes.blocks.bedrockBlock.count ++
-        //     break;
-        //  }
-        
-         this.offsetMeshCount(currentBlockPosition, 1)
-         this.offsetMeshCount(newBlockPosition, 1)
-
-
-
-        //  if(newBlockPosition.depth === -1){
-        //     switch(newBlockPosition.type){
-        //         case 1:
-        //        this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //        break;
-        //     //    case 2:
-        //     //    this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //     //    break
-        //        case 3:
-        //        this.experience.world.terrain.blockTypes.blocks.stoneBlock.count ++
-        //        break
-        //        case 4:
-        //        this.experience.world.terrain.blockTypes.blocks.dirtBlock.count ++
-        //        break
-        //        case 5:
-        //        this.experience.world.terrain.blockTypes.blocks.bedrockBlock.count ++
-        //        break
-        //     //    case 6:
-        //     //    this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //     //    break
-        //     //    case 7:
-        //     //    this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //     //    break
-        //     //    case 8:
-        //     //    this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //     //    break
-        //     //    case 9:
-        //     //     this.experience.world.terrain.blockTypes.blocks.grass.count ++
-        //     //     break
-               
-        //     }
-        //  }
-
-       
-        
         this.experience.world.terrain.displayBlocks(newChunkArray, true)
         this.experience.world.terrain.terrain.arrayOfChunks = newChunkArray
         this.experience.world.terrain.getBoundrys(newChunkArray)
@@ -619,7 +464,7 @@ addBlock(){
         //updating the hovering plane
         this.hoverPlane.raycaster.setFromCamera(this.hoverPlane.viewPoint, this.experience.camera.instance)
 
-        const intersects = this.hoverPlane.raycaster.intersectObjects([this.experience.world.terrain.blockTypes.blocks.grass.instancedMesh, this.experience.world.terrain.blockTypes.blocks.dirtBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.stoneBlock.instancedMesh,this.experience.world.terrain.blockTypes.blocks.woodBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.brickBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.treeBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.sandBlock.instancedMesh])
+        const intersects = this.hoverPlane.raycaster.intersectObjects([this.experience.world.terrain.blockTypes.blocks.grass.instancedMesh, this.experience.world.terrain.blockTypes.blocks.dirtBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.stoneBlock.instancedMesh,this.experience.world.terrain.blockTypes.blocks.woodBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.brickBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.treeBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.sandBlock.instancedMesh, this.experience.world.terrain.blockTypes.blocks.glassBlock.instancedMesh])
         
         if(intersects.length !== 0 && intersects[0].distance < 40){
             const intersectingFace = intersects[0].point
@@ -682,7 +527,7 @@ addBlock(){
                     this.hoverPlane.plane.mesh.position.y = intersectingFace.y - this.hoverPlane.plane.distanceFromBlock
                     
                     !this.hoverPlane.plane.isPlaneInScene?  this.experience.scene.add(this.hoverPlane.plane.mesh): ''
-       
+                    break;
                     case 4:
                         //front face
                     this.hoverPlane.plane.mesh.rotation.x = 0
@@ -707,7 +552,6 @@ addBlock(){
                     
                     !this.hoverPlane.plane.isPlaneInScene?  this.experience.scene.add(this.hoverPlane.plane.mesh): ''      
             }
-          
         }
         else{
         //remove the plane if there are no intersecting objects
@@ -721,19 +565,21 @@ addBlock(){
             //get the elapsed time since the click started
             const currentTime = Date.now()
             this.blocks.click.remove.elapsed = (currentTime - this.blocks.click.remove.startTime) / 1000
-            if(this.blocks.click.remove.elapsed >= 0.06 && !this.blocks.isBlockRemoved){
+            if(this.blocks.click.remove.elapsed >= this.timeToRemoveBlock && !this.blocks.isBlockRemoved && !this.experience.world.previousWorld.isPlayerInGameMenu){
                 this.removeBlock()
+                this.playBlockSound()
+                this.mouseClicked = false
                 this.blocks.isBlockRemoved = true
             }   
         }
-
-        
+        //animate the size of the hoverplane when removing a block
+        if(this.mouseClicked){
+        this.hoverPlane.plane.mesh.scale.x = (this.blocks.click.remove.elapsed / this.timeToRemoveBlock )
+        this.hoverPlane.plane.mesh.scale.y = (this.blocks.click.remove.elapsed / this.timeToRemoveBlock )
+        }
+        else{
+        this.hoverPlane.plane.mesh.scale.x = (1)
+        this.hoverPlane.plane.mesh.scale.y = (1)
+        }
     }
 }
-
-//0 is right  Math.PI * 0.5 -y
-//1 is left - Math.PI * 0.5 - y
-//2 is top - Math.PI * 0.5 -x
-//3 is 
-//4 is front - no rotation
-//5 is back bottom Math.PI  -y
